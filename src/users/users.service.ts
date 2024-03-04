@@ -1,11 +1,41 @@
+import * as uuid from "uuid";
 import { Injectable } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { EmailService } from "src/email/email.service";
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return "This action adds a new user";
+  constructor(private emailService: EmailService) {}
+
+  private checkUserExists(email: string) {
+    // TO-DO
+    return false;
+  }
+
+  private saveUser(
+    name: string,
+    email: string,
+    password: string,
+    signupVerifyToken: string,
+  ) {
+    // TO-DO
+    return;
+  }
+
+  private async sendMemberJoinEmail(email: string, signupVerifyToken: string) {
+    await this.emailService.sendMemberJoinVerification(
+      email,
+      signupVerifyToken,
+    );
+  }
+
+  async createUser(name: string, email: string, password: string) {
+    await this.checkUserExists(email);
+
+    const signupVerifyToken = uuid.v1();
+
+    await this.saveUser(name, email, password, signupVerifyToken);
+    await this.sendMemberJoinEmail(email, signupVerifyToken);
   }
 
   findAll() {

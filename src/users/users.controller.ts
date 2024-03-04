@@ -8,7 +8,6 @@ import {
   Delete,
   Res,
   HttpCode,
-  Redirect,
   Query,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
@@ -24,9 +23,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() dto: CreateUserDto) {
-    console.log(dto);
-    return;
+  async createUser(@Body() dto: CreateUserDto): Promise<void> {
+    const { name, email, password } = dto;
+    await this.usersService.createUser(name, email, password);
   }
 
   @Post("email-verify")

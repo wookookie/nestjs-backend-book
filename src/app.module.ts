@@ -1,9 +1,11 @@
 import { Module } from "@nestjs/common";
-import { ApiController } from "./api/api.controller";
+import { UsersController } from "./users/users.controller";
+import { UsersService } from "./users/users.service";
+import { EmailService } from "./email/email.service";
 
 @Module({
   imports: [],
-  controllers: [ApiController], // ApiController(sub-domain)
-  providers: [],
+  controllers: [UsersController],
+  providers: [UsersService, EmailService],
 })
 export class AppModule {}
