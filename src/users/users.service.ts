@@ -38,6 +38,11 @@ export class UsersService {
     await this.sendMemberJoinEmail(email, signupVerifyToken);
   }
 
+  async verifyEmail(signupVerifyToken: string): Promise<string> {
+    // TO-DO
+    throw new Error("Method not implemented");
+  }
+
   findAll() {
     return `This action returns all users`;
   }
