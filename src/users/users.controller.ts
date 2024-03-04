@@ -9,10 +9,12 @@ import {
   Res,
   HttpCode,
   Redirect,
+  Query,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { GetUserDto } from "./dto/get-users.dto";
 
 @Controller("users")
 export class UsersController {
@@ -20,11 +22,15 @@ export class UsersController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    const { name, email } = createUserDto;
+    return `User created. Name: ${name}, Email: ${email}`;
   }
 
+  // http://localhost:3000/users
+  // http://localhost:3000/users?offset=0&limit=0
   @Get()
-  findAll(@Res() res) {
+  findAll(@Res() res, @Query() dto: GetUserDto) {
+    console.log(dto);
     const users = this.usersService.findAll();
     return res.status(200).send(users); // Express response
   }
