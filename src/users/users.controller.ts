@@ -36,8 +36,13 @@ export class UsersController {
 
   @Post("login")
   async login(@Body() dto: UserLoginDto): Promise<string> {
-    console.log(dto);
-    return;
+    const { email, password } = dto;
+    return await this.usersService.login(email, password);
+  }
+
+  @Get(":id")
+  async getUserInfo(@Param("id") userId: string): Promise<UserInfo> {
+    return await this.usersService.getUserInfo(userId);
   }
 
   // http://localhost:3000/users
@@ -47,12 +52,6 @@ export class UsersController {
     console.log(dto);
     const users = this.usersService.findAll();
     return res.status(200).send(users); // Express response
-  }
-
-  @Get(":id")
-  getUserInfo(@Param("id") userId: string): Promise<UserInfo> {
-    console.log(userId);
-    return;
   }
 
   @HttpCode(202)
