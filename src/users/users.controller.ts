@@ -6,6 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  Res,
+  HttpCode,
+  Redirect,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -21,15 +24,18 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Res() res) {
+    const users = this.usersService.findAll();
+    return res.status(200).send(users); // Express response
   }
 
+  @Redirect("https://nestjs.com", 301)
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.usersService.findOne(+id);
   }
 
+  @HttpCode(202)
   @Patch(":id")
   update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
@@ -38,5 +44,13 @@ export class UsersController {
   @Delete(":id")
   remove(@Param("id") id: string) {
     return this.usersService.remove(+id);
+  }
+
+  @Delete(":userId/memo/:memoId")
+  deleteUserMemo(
+    @Param("userId") userId: string,
+    @Param("memoId") memoId: string,
+  ) {
+    return `userId: ${userId}, memoId: ${memoId}`;
   }
 }
