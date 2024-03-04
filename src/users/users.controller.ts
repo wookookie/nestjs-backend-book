@@ -15,15 +15,30 @@ import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { GetUserDto } from "./dto/get-users.dto";
+import { VerifyEmailDto } from "./dto/verify-email.dto";
+import { UserLoginDto } from "./dto/user-login.dto";
+import { UserInfo } from "./interfaces/user-info.interface";
 
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    const { name, email } = createUserDto;
-    return `User created. Name: ${name}, Email: ${email}`;
+  create(@Body() dto: CreateUserDto) {
+    console.log(dto);
+    return;
+  }
+
+  @Post("email-verify")
+  async verifyEmail(@Query() dto: VerifyEmailDto): Promise<string> {
+    console.log(dto);
+    return;
+  }
+
+  @Post("login")
+  async login(@Body() dto: UserLoginDto): Promise<string> {
+    console.log(dto);
+    return;
   }
 
   // http://localhost:3000/users
@@ -35,10 +50,10 @@ export class UsersController {
     return res.status(200).send(users); // Express response
   }
 
-  @Redirect("https://nestjs.com", 301)
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.usersService.findOne(+id);
+  getUserInfo(@Param("id") userId: string): Promise<UserInfo> {
+    console.log(userId);
+    return;
   }
 
   @HttpCode(202)
