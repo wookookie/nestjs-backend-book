@@ -1,5 +1,5 @@
 import * as jwt from "jsonwebtoken";
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import authConfig from "../config/auth.config";
 import { ConfigType } from "@nestjs/config";
 
@@ -22,5 +22,19 @@ export class AuthService {
       audience: "wookookie.com",
       issuer: "wookookie.com",
     });
+  }
+
+  verify(jwtString: string) {
+    try {
+      const payload = jwt.verify(jwtString, this.config.jwtSecret) as (
+        | jwt.JwtPayload
+        | string
+      ) &
+        User;
+      const { id, email } = payload;
+      return { userId: id, email };
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
   }
 }
