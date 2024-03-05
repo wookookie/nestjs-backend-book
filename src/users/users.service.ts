@@ -4,7 +4,7 @@ import { Injectable, UnprocessableEntityException } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserEntity } from "./entities/user.entity";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { EmailService } from "src/email/email.service";
 import { UserInfo } from "./interfaces/user-info.interface";
 
@@ -13,6 +13,7 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
+    private dataSource: DataSource,
     private emailService: EmailService,
   ) {}
 
@@ -39,6 +40,54 @@ export class UsersService {
     return;
   }
 
+  // Transaction
+  private async saveUserUsingQueryRunner(
+    name: string,
+    email: string,
+    password: string,
+    signupVerifyToken: string,
+  ) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const user = new UserEntity();
+      user.id = ulid(); // Random string
+      user.name = name;
+      user.email = email;
+      user.password = password;
+      user.signupVerifyToken = signupVerifyToken;
+      await this.usersRepository.save(user);
+      // Commit
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      // Rollback
+      await queryRunner.rollbackTransaction();
+    } finally {
+      // Release
+      await queryRunner.release();
+    }
+  }
+
+  // Transaction
+  private async saveUserUsingTransaction(
+    name: string,
+    email: string,
+    password: string,
+    signupVerifyToken: string,
+  ) {
+    await this.dataSource.transaction(async (manager) => {
+      const user = new UserEntity();
+      user.id = ulid(); // Random string
+      user.name = name;
+      user.email = email;
+      user.password = password;
+      user.signupVerifyToken = signupVerifyToken;
+      await manager.save(user);
+    });
+  }
+
   private async sendMemberJoinEmail(email: string, signupVerifyToken: string) {
     await this.emailService.sendMemberJoinVerification(
       email,
@@ -56,7 +105,13 @@ export class UsersService {
 
     const signupVerifyToken = uuid.v1();
 
-    await this.saveUser(name, email, password, signupVerifyToken);
+    // await this.saveUser(name, email, password, signupVerifyToken);
+    await this.saveUserUsingTransaction(
+      name,
+      email,
+      password,
+      signupVerifyToken,
+    );
     await this.sendMemberJoinEmail(email, signupVerifyToken);
   }
 
