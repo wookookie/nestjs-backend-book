@@ -1,25 +1,41 @@
 import * as uuid from "uuid";
-import { Injectable } from "@nestjs/common";
+import { ulid } from "ulid";
+import { Injectable, UnprocessableEntityException } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { UserEntity } from "./entities/user.entity";
+import { Repository } from "typeorm";
 import { EmailService } from "src/email/email.service";
 import { UserInfo } from "./interfaces/user-info.interface";
 
 @Injectable()
 export class UsersService {
-  constructor(private emailService: EmailService) {}
+  constructor(
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<UserEntity>,
+    private emailService: EmailService,
+  ) {}
 
-  private checkUserExists(email: string) {
-    // TO-DO
-    return false;
+  private async checkUserExists(email: string): Promise<boolean> {
+    const user = await this.usersRepository.findOne({
+      where: { email: email },
+    });
+    return user !== null;
   }
 
-  private saveUser(
+  private async saveUser(
     name: string,
     email: string,
     password: string,
     signupVerifyToken: string,
   ) {
-    // TO-DO
+    const user = new UserEntity();
+    user.id = ulid(); // Random string
+    user.name = name;
+    user.email = email;
+    user.password = password;
+    user.signupVerifyToken = signupVerifyToken;
+    await this.usersRepository.save(user);
     return;
   }
 
@@ -31,7 +47,12 @@ export class UsersService {
   }
 
   async createUser(name: string, email: string, password: string) {
-    await this.checkUserExists(email);
+    const userExist = await this.checkUserExists(email);
+    if (userExist) {
+      throw new UnprocessableEntityException(
+        "해당 메일로는 가입할 수 없습니다.",
+      );
+    }
 
     const signupVerifyToken = uuid.v1();
 
