@@ -1,6 +1,7 @@
 import Mail from "nodemailer/lib/mailer";
 import { createTransport } from "nodemailer";
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 interface EmailOption {
   to: string;
@@ -12,10 +13,13 @@ interface EmailOption {
 export class EmailService {
   private transpoter: Mail;
 
-  constructor() {
+  constructor(private configService: ConfigService) {
     this.transpoter = createTransport({
-      service: "Gmail",
-      auth: { user: "EMAIL", pass: "PASSWORD" },
+      service: this.configService.get<string>("email.service"),
+      auth: {
+        user: this.configService.get<string>("email.auth.user"),
+        pass: this.configService.get<string>("email.auth.pass"),
+      },
     });
   }
 
@@ -23,7 +27,7 @@ export class EmailService {
     emailAddress: string,
     signupVerifyToken: string,
   ) {
-    const baseUrl = "http://localhost:3000";
+    const baseUrl = this.configService.get<string>("email.baseUrl");
 
     // 인증하기 버튼 클릭 시 서버로 전송될 POST 요청 주소
     const url = `${baseUrl}/users/email-verify?signupVerifyToken=${signupVerifyToken}`;
